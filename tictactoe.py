@@ -38,7 +38,11 @@ def player(board):
                 O_count += 1
             else:
                 pass
-    return X if O_count>X_count else O
+    # return X if (O_count>X_count) else O
+    if O_count < X_count:
+        return O
+    else:
+        return X
 
 
 def actions(board):
@@ -82,15 +86,15 @@ def winner(board):
     # 🔄 Looping 3 and doing some syntactic magic
     for e in range(3):
         # 🚥 for horizontal lines
-        if all(board[e][0] == i for i in board[e]) and board[e][0] != EMPTY:
+        if all(board[e][0] == i for i in board[e]):
             return board[e][0]
         # 🚦 for vertical lines
-        elif board[0][e] == board[1][e] == board[2][e] and board[0][e] != EMPTY:
+        elif board[0][e] == board[1][e] == board[2][e]:
             return board[0][e]
     # ❌ diagonls
-    if board[0][0] == board[1][1] == board[2][2] and board[0][0] != EMPTY:
+    if board[0][0] == board[1][1] == board[2][2]:
         return board[0][0]
-    elif board[0][2] == board[1][1] == board[0][2] and board[2][0] != EMPTY:
+    elif board[0][2] == board[1][1] == board[0][2]:
         return board[0][2]
                 
                     ######## CAN BE BETTER!!!!!!!!!!!!!! ##############
@@ -101,7 +105,7 @@ def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    if winner(board):
+    if winner(board) is not None or (not any(EMPTY in sublist for sublist in board) and winner(board) is None):
         return True
     return False
 
@@ -122,4 +126,49 @@ def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    raise NotImplementedError
+    if terminal(board):
+        return None
+    else:
+        if player(board) == X:
+            value, move = max_value(board)
+            return move
+        else:
+            value, move = min_value(board)
+            return move
+
+
+def max_value(board):
+    if terminal(board):
+        return utility(board), None
+
+    v = float('-inf')
+    move = None
+    for action in actions(board):
+        # v = max(v, min_value(result(board, action)))
+        aux, act = min_value(result(board, action))
+        if aux > v:
+            v = aux
+            move = action
+            if v == 1:
+                return v, move
+
+    return v, move
+
+
+def min_value(board):
+    if terminal(board):
+        return utility(board), None
+
+    v = float('inf')
+    move = None
+    for action in actions(board):
+        # v = max(v, min_value(result(board, action)))
+        aux, act = max_value(result(board, action))
+        if aux < v:
+            v = aux
+            move = action
+            if v == -1:
+                return v, move
+
+    return v, move
+    
